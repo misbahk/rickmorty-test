@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getCharacters } from '../api/characters';
-import { CharactersResponse } from '../types/character';
+import { getCharacters, CharactersResponse } from '@/api/characters';
 
 export function useCharacters(page: number) {
   return useQuery<CharactersResponse>({

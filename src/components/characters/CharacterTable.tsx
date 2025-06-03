@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { 
   useReactTable, 
   getCoreRowModel, 
@@ -8,43 +8,38 @@ import {
 import { useCharacters } from '@/hooks/useCharacters';
 import { characterColumns } from './CharacterColumns';
 import { useSearch, useNavigate } from '@tanstack/react-router';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 const CharacterTable = () => {
   const { page: pageFromUrl = 1 } = useSearch({ from: '/' });
   const navigate = useNavigate({ from: '/' });
-  const { toast } = useToast();
+  const [refreshStatus, setRefreshStatus] = useState<'idle' | 'success' | 'error'>('idle');
   
-  // Use custom hook for localStorage
-  const [page, setPage] = useLocalStorage('rickAndMortyPage', Number(pageFromUrl));
-  const [isRefreshing, setIsRefreshing] = useLocalStorage('isRefreshing', false);
+  // Use state for current page
+  const [page, setPage] = useState(Number(pageFromUrl));
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Fetch characters with the current page
   const { data, isLoading, isError, error, refetch } = useCharacters(page);
   
-  const characters = data?.results || [];
-  const totalPages = data?.info?.pages || 0;
+  // Get only 10 characters from the API response
+  const characters = data?.results.slice(0, 10) || [];
+  const totalPages = Math.ceil((data?.info?.count || 0) / 10);
 
   const handleRefresh = useCallback(async () => {
     try {
       setIsRefreshing(true);
+      setRefreshStatus('idle');
       await refetch();
-      toast({
-        title: "Success",
-        description: "Character list refreshed successfully",
-      });
+      setRefreshStatus('success');
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to refresh character list",
-        variant: "destructive",
-      });
+      setRefreshStatus('error');
     } finally {
       setIsRefreshing(false);
+      // Clear status after 3 seconds
+      setTimeout(() => setRefreshStatus('idle'), 3000);
     }
-  }, [refetch, setIsRefreshing, toast]);
+  }, [refetch]);
 
   // Update URL when page changes
   useEffect(() => {
@@ -64,7 +59,7 @@ const CharacterTable = () => {
     state: {
       pagination: {
         pageIndex: page - 1,
-        pageSize: 20,
+        pageSize: 10,
       },
     },
   });
@@ -73,7 +68,7 @@ const CharacterTable = () => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
-  }, [setPage, totalPages]);
+  }, [totalPages]);
 
   if (isLoading) return <div>Loading characters...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
@@ -82,13 +77,21 @@ const CharacterTable = () => {
     <div className="character-table">
       <h2>Rick & Morty Characters</h2>
       
-      <Button 
-        onClick={handleRefresh} 
-        disabled={isRefreshing}
-        variant="outline"
-      >
-        {isRefreshing ? 'Refreshing...' : 'Refresh'}
-      </Button>
+      <div className="refresh-section">
+        <Button 
+          onClick={handleRefresh} 
+          disabled={isRefreshing}
+          variant="outline"
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
+        {refreshStatus === 'success' && (
+          <span className="text-green-500 ml-2">✓ Refreshed successfully</span>
+        )}
+        {refreshStatus === 'error' && (
+          <span className="text-red-500 ml-2">✗ Failed to refresh</span>
+        )}
+      </div>
       
       <div className="table-container">
         <table>

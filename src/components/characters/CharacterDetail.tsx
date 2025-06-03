@@ -1,15 +1,11 @@
 import { useCallback } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { useCharacter } from '@/hooks/useCharacter';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 const CharacterDetail = () => {
   const { id } = useParams({ from: '/character/$id' });
-  const { toast } = useToast();
-  const [savedPage] = useLocalStorage('rickAndMortyPage', 1);
-  
+ 
   const { data: character, isLoading, isError, error } = useCharacter(parseInt(id, 10));
 
   const handleBack = useCallback(() => {

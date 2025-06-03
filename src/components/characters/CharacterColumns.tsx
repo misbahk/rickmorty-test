@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Character } from '../../types/character';
+import { Character } from '@/api/characters';
 
 const columnHelper = createColumnHelper<Character>();
 
