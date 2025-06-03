@@ -1,56 +1,73 @@
-# Rick and Morty Character Explorer
+# Rick & Morty Explorer
 
-A single-page application that consumes the public Rick & Morty REST API and presents a paginated list of characters and details.
+A React application that displays characters from the Rick and Morty API with pagination and detailed views.
 
 ## Features
 
-- Fetches data from the Rick & Morty API
-- Displays a paginated character list using TanStack Table
-- Persists the current page in both URL and localStorage
-- Provides a refresh button to re-fetch the current page
-- Shows character details on a dedicated route
+- Display paginated character list (10 items per page)
+- Persist current page in URL for sharing and refreshing
+- Refresh button to update the current page
+- Detailed character view with all information
+- Responsive design
+- Type-safe with TypeScript
 
-## Technology Stack
+## Tech Stack
 
-- React 18
+- React
 - TypeScript
-- TanStack Query for data fetching
 - TanStack Router for routing
-- TanStack Table for the character list
+- TanStack Table for table functionality
+- React Query for data fetching
+- Tailwind CSS for styling
+
+## Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/rick-morty-app.git
+cd rick-morty-app
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Project Structure
 
 ```
 src/
-├── api/                  # API client functions
-├── components/           # React components
-│   └── characters/       # Character-related components
-├── hooks/                # Custom React hooks
-├── types/                # TypeScript type definitions
-├── App.css               # Application styles
-├── App.tsx               # Main application component
-├── main.tsx              # Application entry point
-└── router.tsx            # TanStack Router configuration
+├── api/              # API functions and types
+├── components/       # React components
+│   ├── characters/   # Character-related components
+│   └── ui/          # Reusable UI components
+├── hooks/           # Custom React hooks
+├── utils.ts         # Utility functions
+├── App.tsx          # Root component
+├── main.tsx         # Entry point
+└── router.tsx       # Route configuration
 ```
 
-## Getting Started
+## Development
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Start the development server:
-   ```
-   npm run dev
-   ```
+- The app uses TypeScript for type safety
+- React Query for data fetching and caching
+- TanStack Router for type-safe routing
+- TanStack Table for table functionality
 
-## Deployment
+## Contributing
 
-To deploy this application:
+1. Create a new branch for your feature
+2. Make your changes
+3. Submit a pull request
 
-1. Build the production version:
-   ```
-   pnpm run build
-   ```
-2. Deploy the contents of the `dist` directory to your hosting provider
+## License
+
+MIT
