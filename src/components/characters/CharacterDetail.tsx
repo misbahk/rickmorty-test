@@ -1,59 +1,54 @@
-import React from 'react';
+import { useCallback } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
-import { useCharacter } from '../../hooks/useCharacters';
+import { useCharacter } from '../../hooks/useCharacter';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { Button } from '../ui/button';
+import { useToast } from '../../hooks/use-toast';
 
 const CharacterDetail = () => {
   const { id } = useParams({ from: '/character/$id' });
-  const characterId = parseInt(id, 10);
+  const { toast } = useToast();
+  const [savedPage] = useLocalStorage('rickAndMortyPage', 1);
   
-  const { data: character, isLoading, isError, error } = useCharacter(characterId);
+  const { data: character, isLoading, isError, error } = useCharacter(parseInt(id, 10));
 
-  // Get the saved page from localStorage
-  const savedPage = localStorage.getItem('rickAndMortyPage') || '1';
+  const handleBack = useCallback(() => {
+    window.history.back();
+  }, []);
 
   if (isLoading) return <div>Loading character details...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
   if (!character) return <div>Character not found</div>;
 
+  const infoFields = [
+    { label: 'Status', value: character.status },
+    { label: 'Species', value: character.species },
+    { label: 'Gender', value: character.gender },
+    { label: 'Origin', value: character.origin.name },
+    { label: 'Location', value: character.location.name },
+    { label: 'Episodes', value: character.episode.length },
+  ];
+
   return (
     <div className="character-detail">
-      <Link to="/" search={{ page: Number(savedPage) }}>Back to Characters</Link>
-      
-      <div className="character-card">
+      <Button 
+        onClick={handleBack}
+        variant="outline"
+      >
+        Back to List
+      </Button>
+
+      <div className="character-info">
         <img src={character.image} alt={character.name} />
+        <h2>{character.name}</h2>
         
-        <div className="character-info">
-          <h2>{character.name}</h2>
-          
-          <div className="info-row">
-            <span className="label">Status:</span>
-            <span className="value">{character.status}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="label">Species:</span>
-            <span className="value">{character.species}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="label">Gender:</span>
-            <span className="value">{character.gender}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="label">Origin:</span>
-            <span className="value">{character.origin.name}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="label">Location:</span>
-            <span className="value">{character.location.name}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="label">Episodes:</span>
-            <span className="value">{character.episode.length}</span>
-          </div>
+        <div className="info-grid">
+          {infoFields.map(({ label, value }) => (
+            <div key={label} className="info-item">
+              <span className="label">{label}:</span>
+              <span className="value">{value}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchCharacters, fetchCharacterById } from '../api/rickAndMortyApi';
 import { CharactersResponse } from '../types/api';
+import { getCharacters } from '../api/characters';
 
-export const useCharacters = (page: number) => {
+export function useCharacters(page: number) {
   return useQuery<CharactersResponse>({
     queryKey: ['characters', page],
-    queryFn: () => fetchCharacters(page),
-    // Remove keepPreviousData as it's not supported in this version
+    queryFn: () => getCharacters(page),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-};
+}
 
 export const useCharacter = (id: number) => {
   return useQuery({

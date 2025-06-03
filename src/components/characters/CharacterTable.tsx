@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { 
   useReactTable, 
   getCoreRowModel, 
@@ -8,15 +8,18 @@ import {
 import { useCharacters } from '../../hooks/useCharacters';
 import { characterColumns } from './CharacterColumns';
 import { useSearch, useNavigate } from '@tanstack/react-router';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { Button } from '../ui/button';
+import { useToast } from '../../hooks/use-toast';
 
 const CharacterTable = () => {
-  // Get the page from URL search params
   const { page: pageFromUrl = 1 } = useSearch({ from: '/' });
   const navigate = useNavigate({ from: '/' });
+  const { toast } = useToast();
   
-  // Initialize state with the page from URL
-  const [page, setPage] = useState<number>(Number(pageFromUrl));
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  // Use custom hook for localStorage
+  const [page, setPage] = useLocalStorage('rickAndMortyPage', Number(pageFromUrl));
+  const [isRefreshing, setIsRefreshing] = useLocalStorage('isRefreshing', false);
   
   // Fetch characters with the current page
   const { data, isLoading, isError, error, refetch } = useCharacters(page);
@@ -24,36 +27,32 @@ const CharacterTable = () => {
   const characters = data?.results || [];
   const totalPages = data?.info?.pages || 0;
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refetch();
-    setIsRefreshing(false);
-  };
+  const handleRefresh = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+      toast({
+        title: "Success",
+        description: "Character list refreshed successfully",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh character list",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch, setIsRefreshing, toast]);
 
   // Update URL when page changes
   useEffect(() => {
-    // Update URL search params
     navigate({
       search: { page },
       replace: true,
     });
-    
-    // Also store in localStorage for additional persistence
-    localStorage.setItem('rickAndMortyPage', String(page));
   }, [page, navigate]);
-  
-  // Load page from localStorage on initial render if not in URL
-  useEffect(() => {
-    if (pageFromUrl === 1) {
-      const savedPage = localStorage.getItem('rickAndMortyPage');
-      if (savedPage) {
-        const parsedPage = parseInt(savedPage, 10);
-        if (!isNaN(parsedPage) && parsedPage >= 1) {
-          setPage(parsedPage);
-        }
-      }
-    }
-  }, [pageFromUrl]);
 
   const table = useReactTable({
     data: characters,
@@ -64,17 +63,17 @@ const CharacterTable = () => {
     pageCount: totalPages,
     state: {
       pagination: {
-        pageIndex: page - 1, // TanStack Table uses 0-indexed pages
-        pageSize: 20, // Rick & Morty API returns 20 items per page
+        pageIndex: page - 1,
+        pageSize: 20,
       },
     },
   });
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
-  };
+  }, [setPage, totalPages]);
 
   if (isLoading) return <div>Loading characters...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
@@ -83,58 +82,62 @@ const CharacterTable = () => {
     <div className="character-table">
       <h2>Rick & Morty Characters</h2>
       
-      <button 
+      <Button 
         onClick={handleRefresh} 
-        className="refresh-button"
         disabled={isRefreshing}
+        variant="outline"
       >
         {isRefreshing ? 'Refreshing...' : 'Refresh'}
-      </button>
+      </Button>
       
-      <table>
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id}>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-container">
+        <table>
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       
       <div className="pagination">
-        <button 
+        <Button 
           onClick={() => handlePageChange(page - 1)} 
           disabled={page === 1}
+          variant="outline"
         >
           Previous
-        </button>
+        </Button>
         <span>
           Page {page} of {totalPages}
         </span>
-        <button 
+        <Button 
           onClick={() => handlePageChange(page + 1)} 
           disabled={page === totalPages}
+          variant="outline"
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );
