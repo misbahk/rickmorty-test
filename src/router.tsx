@@ -1,4 +1,4 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CharacterTable from './components/characters/CharacterTable';
 import CharacterDetail from './components/characters/CharacterDetail';
@@ -13,16 +13,12 @@ const rootRoute = createRootRoute({
       <div className="app-container">
         <h1>Rick & Morty Explorer</h1>
         <div className="content">
-          {/* Use Outlet component instead of outlet tag */}
           <Outlet />
         </div>
       </div>
     </QueryClientProvider>
   ),
 });
-
-// Import Outlet from router
-import { Outlet } from '@tanstack/react-router';
 
 // Home route with character list
 const indexRoute = createRoute({

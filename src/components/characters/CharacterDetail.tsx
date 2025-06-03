@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { useParams, Link } from '@tanstack/react-router';
-import { useCharacter } from '../../hooks/useCharacter';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Button } from '../ui/button';
-import { useToast } from '../../hooks/use-toast';
+import { useParams } from '@tanstack/react-router';
+import { useCharacter } from '@/hooks/useCharacter';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const CharacterDetail = () => {
   const { id } = useParams({ from: '/character/$id' });

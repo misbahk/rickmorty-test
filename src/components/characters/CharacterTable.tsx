@@ -5,12 +5,12 @@ import {
   getPaginationRowModel,
   flexRender
 } from '@tanstack/react-table';
-import { useCharacters } from '../../hooks/useCharacters';
+import { useCharacters } from '@/hooks/useCharacters';
 import { characterColumns } from './CharacterColumns';
 import { useSearch, useNavigate } from '@tanstack/react-router';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Button } from '../ui/button';
-import { useToast } from '../../hooks/use-toast';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const CharacterTable = () => {
   const { page: pageFromUrl = 1 } = useSearch({ from: '/' });
