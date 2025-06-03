@@ -45,14 +45,6 @@ src/
    npm run dev
    ```
 
-## Implementation Details
-
-- The application uses TanStack Query to fetch and cache data from the Rick & Morty API
-- TanStack Router is used for routing and URL state management
-- TanStack Table provides the data grid functionality for the character list
-- The current page is persisted in both the URL and localStorage for state preservation
-- Character details are displayed on a dedicated route with back navigation
-
 ## Deployment
 
 To deploy this application:
