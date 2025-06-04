@@ -8,7 +8,26 @@ import {
 import { useCharacters } from '@/hooks/useCharacters';
 import { characterColumns } from './CharacterColumns';
 import { useSearch, useNavigate } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Typography,
+  Box,
+  CircularProgress,
+  Alert,
+  Pagination,
+  IconButton,
+  Tooltip
+} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const CharacterTable = () => {
   const { page: pageFromUrl = 1 } = useSearch({ from: '/' });
@@ -64,85 +83,108 @@ const CharacterTable = () => {
     },
   });
 
-  const handlePageChange = useCallback((newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
+  const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
+    if (value >= 1 && value <= totalPages) {
+      setPage(value);
     }
   }, [totalPages]);
 
-  if (isLoading) return <div>Loading characters...</div>;
-  if (isError) return <div>Error: {(error as Error).message}</div>;
+  if (isLoading) return (
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <CircularProgress />
+    </Box>
+  );
+  
+  if (isError) return (
+    <Alert severity="error" sx={{ mt: 2 }}>
+      Error: {(error as Error).message}
+    </Alert>
+  );
 
   return (
-    <div className="character-table">
-      <h2>Rick & Morty Characters</h2>
+    <Box sx={{ width: '100%' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4" component="h2">
+          Rick & Morty Characters
+        </Typography>
+        
+        <Box display="flex" alignItems="center" gap={2}>
+          <Tooltip title="Refresh data">
+            <IconButton 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              color="primary"
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+          
+          {refreshStatus === 'success' && (
+            <Alert 
+              icon={<CheckCircleIcon />} 
+              severity="success"
+              sx={{ py: 0 }}
+            >
+              Refreshed successfully
+            </Alert>
+          )}
+          {refreshStatus === 'error' && (
+            <Alert 
+              icon={<ErrorIcon />} 
+              severity="error"
+              sx={{ py: 0 }}
+            >
+              Failed to refresh
+            </Alert>
+          )}
+        </Box>
+      </Box>
       
-      <div className="refresh-section">
-        <Button 
-          onClick={handleRefresh} 
-          disabled={isRefreshing}
-          variant="outline"
-        >
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
-        {refreshStatus === 'success' && (
-          <span className="text-green-500 ml-2">✓ Refreshed successfully</span>
-        )}
-        {refreshStatus === 'error' && (
-          <span className="text-red-500 ml-2">✗ Failed to refresh</span>
-        )}
-      </div>
-      
-      <div className="table-container">
-        <table>
-          <thead>
+      <TableContainer component={Paper} sx={{ mb: 3 }}>
+        <Table sx={{ minWidth: 650 }} aria-label="character table">
+          <TableHead>
             {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <TableCell key={header.id}>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()
                     )}
-                  </th>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </thead>
-          <tbody>
+          </TableHead>
+          <TableBody>
             {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
+              <TableRow
+                key={row.id}
+                hover
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>
+                  <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
       
-      <div className="pagination">
-        <Button 
-          onClick={() => handlePageChange(page - 1)} 
-          disabled={page === 1}
-          variant="outline"
-        >
-          Previous
-        </Button>
-        <span>
-          Page {page} of {totalPages}
-        </span>
-        <Button 
-          onClick={() => handlePageChange(page + 1)} 
-          disabled={page === totalPages}
-          variant="outline"
-        >
-          Next
-        </Button>
-      </div>
-    </div>
+      <Box display="flex" justifyContent="center" mt={3}>
+        <Pagination 
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+          showFirstButton
+          showLastButton
+        />
+      </Box>
+    </Box>
   );
 };
 
