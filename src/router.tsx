@@ -1,10 +1,13 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CharacterTable from './components/characters/CharacterTable';
-import CharacterDetail from './components/characters/CharacterDetail';
+import { Suspense, lazy } from 'react';
 
 // Create a query client
 const queryClient = new QueryClient();
+
+// Lazy load components
+const CharacterTable = lazy(() => import('./components/characters/CharacterTable'));
+const CharacterDetail = lazy(() => import('./components/characters/CharacterDetail'));
 
 // Create routes
 const rootRoute = createRootRoute({
@@ -13,7 +16,9 @@ const rootRoute = createRootRoute({
       <div className="app-container">
         <h1>Rick & Morty Explorer</h1>
         <div className="content">
-          <Outlet />
+          <Suspense fallback={<div>Loading...</div>}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
     </QueryClientProvider>
